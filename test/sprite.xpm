@@ -1,0 +1,33 @@
+/* XPM */
+static char *cake1701878252[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 11 1 ",
+"  c None",
+". c #1A0C02",
+"X c #44210A",
+"o c #562D11",
+"O c #6E3815",
+"+ c #975224",
+"@ c #FF8400",
+"# c #FFDE00",
+"$ c #94C9D3",
+"% c #B5DAE1",
+"& c white",
+/* pixels */
+"      @         ",
+"      #         ",
+"            OO  ",
+"      &  oOoOX  ",
+"      %OOOOOXX  ",
+"   oOO$OoOoXX.  ",
+" OOOOo$OOOXX.X  ",
+" O+oOOOoOXX.XX  ",
+" +OO+OoOXX.XX.  ",
+" O++O++OX.XX.   ",
+" +O+OO+O.XX.    ",
+" O+O+OOXXX.     ",
+" oo+O++OX.      ",
+"   oo+OO.       ",
+"     ooX        ",
+"                "
+};
