@@ -683,67 +683,73 @@ void create_plane_mesh(Object *plane, float width, float height, int resolution_
     }
 }
 
+void generate_cylinder_mesh(Object *obj, float radius, float height, int segments) {
+    int vertex_count = (segments + 1) * 2 + 2;
+    int triangle_count = segments * 4;
 
-void parse_obj_file(const char *filename, Object *obj) {
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        fprintf(stderr, "Error opening file %s\n", filename);
-        exit(1);
+    Vector3 *vertices = (Vector3 *)malloc(vertex_count * sizeof(Vector3));
+    int *triangles = (int *)malloc(triangle_count * 3 * sizeof(int));
+
+    // Create vertices
+    float half_height = height / 2.0f;
+
+    // Bottom center vertex
+    vertices[0] = (Vector3){0.0f, -half_height, 0.0f};
+    // Top center vertex
+    vertices[1] = (Vector3){0.0f, half_height, 0.0f};
+
+    // Bottom circle vertices
+    for (int i = 0; i <= segments; ++i) {
+        float theta = (float)i / segments * 2.0f * M_PI;
+        float x = radius * cos(theta);
+        float z = radius * sin(theta);
+        vertices[i + 2] = (Vector3){x, -half_height, z};
     }
 
-    // Temporary storage for parsing
-    int max_vertices = 1000;
-    obj->vertices = (Vector3 *)malloc(max_vertices * sizeof(Vector3));
-    obj->vert_count = 0;
-    obj->tri_count = 0;
-
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        char type;
-        if (sscanf(line, " %c", &type) == 1) {
-            switch (type) {
-                case 'v': {
-                    Vector3 vertex;
-                    sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
-                    if (obj->vert_count >= max_vertices) {
-                        max_vertices *= 2;
-                        obj->vertices = realloc(obj->vertices, max_vertices * sizeof(Vector3));
-                    }
-                    obj->vertices[obj->vert_count++] = vertex;
-                    break;
-                }
-                case 'f': {
-                    int indices[16]; // Maximum 16 indices per face (adjust as needed)
-                    int num_indices = 0;
-                    char *token = strtok(line, " ");
-                    token = strtok(NULL, " "); // Skip the 'f' token
-                    while (token != NULL) {
-                        sscanf(token, "%d", &indices[num_indices++]);
-                        token = strtok(NULL, " ");
-                    }
-                    if (num_indices >= 3) {
-                        // Assuming triangles, add face indices to obj->triangles
-                        int num_triangles = num_indices - 2;
-                        if (obj->tri_count == 0) {
-                            obj->triangles = (int *)malloc(num_triangles * 3 * sizeof(int));
-                        } else {
-                            obj->triangles = (int *)realloc(obj->triangles, (obj->tri_count + num_triangles) * 3 * sizeof(int));
-                        }
-                        for (int i = 0; i < num_triangles; i++) {
-                            obj->triangles[obj->tri_count * 3] = indices[0] - 1;
-                            obj->triangles[obj->tri_count * 3 + 1] = indices[i + 1] - 1;
-                            obj->triangles[obj->tri_count * 3 + 2] = indices[i + 2] - 1;
-                            obj->tri_count++;
-                        }
-                    }
-                    break;
-                }
-                // Handle other cases (vn, vt) similarly
-            }
-        }
+    // Top circle vertices
+    for (int i = 0; i <= segments; ++i) {
+        float theta = (float)i / segments * 2.0f * M_PI;
+        float x = radius * cos(theta);
+        float z = radius * sin(theta);
+        vertices[i + segments + 3] = (Vector3){x, half_height, z};
     }
 
-    fclose(file);
+    // Create triangles
+    int tri_index = 0;
+
+    // Bottom circle triangles
+    for (int i = 0; i < segments; ++i) {
+        triangles[tri_index++] = 0;
+        triangles[tri_index++] = i + 2;
+        triangles[tri_index++] = i + 3;
+    }
+
+    // Top circle triangles
+    for (int i = 0; i < segments; ++i) {
+        triangles[tri_index++] = 1;
+        triangles[tri_index++] = i + segments + 3;
+        triangles[tri_index++] = i + segments + 4;
+    }
+
+    // Side triangles
+    for (int i = 0; i < segments; ++i) {
+        int bottom1 = i + 2;
+        int bottom2 = i + 3;
+        int top1 = i + segments + 3;
+        int top2 = i + segments + 4;
+
+        // First triangle
+        triangles[tri_index++] = bottom1;
+        triangles[tri_index++] = bottom2;
+        triangles[tri_index++] = top1;
+
+        // Second triangle
+        triangles[tri_index++] = bottom2;
+        triangles[tri_index++] = top2;
+        triangles[tri_index++] = top1;
+    }
+
+    *obj = (Object){triangles,vertices,0 vertex_count, triangle_count,0,(Vector3){0,0,0}};
 }
 
 int main() {
